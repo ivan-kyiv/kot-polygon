@@ -1,3 +1,14 @@
+var points; // All points we have. Format {ID:{x:X, y:Y}, ...}
+var sections; // List by names of arrays of line sections.
+              // Format {NAME:[[begin_point_ID, end_point_ID, state], ...], ...}
+              // state:
+              //     0 == just added,
+              //     1 == used,
+              //     2 == can not be used,
+              //     3 == is inside of not self polygon,
+              //     4 == is a mutual edge of two polygons.
+
+
 function intersects(fig1, fig2) {
   // Замените код функции на полноценную реализацию
 
