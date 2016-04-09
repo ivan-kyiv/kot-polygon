@@ -1,14 +1,14 @@
 var points = {  // All points we have. Format {ID:{x:X, y:Y}, ...}
   last: 0,      // Last used ID
-  insert: function(new_x, new_y) {  // Insert new point
+  insert: function(new_p) {  // Insert new point
   // returns id of added or exist point
     for (var i = 1; i <= this.last; i++) {
-      if (this[i].x == new_x && this[i].y == new_y) {
+      if (this[i].x == new_p.x && this[i].y == new_p.y) {
         return i
       }
     }
     this.last++;
-    this[this.last] = {x: new_x, y: new_y};
+    this[this.last] = new_p;
     return [this.last]
   }
 }
@@ -26,12 +26,12 @@ function p_import(p_name, vertexes) {
 // Import a polygon into points and sections
 // p_name - polygon name to store in sections
 // vertexes - array of {x:X, y:Y} that is the polygon contour
-  var b_p = points.insert(vertexes[0].x, vertexes[0].y),
+  var b_p = points.insert(vertexes[0]),
     c_p,  // current point ID
     ip = 1;
   sections[p_name] = [[b_p, null, 0],null];
   while (ip < vertexes.length) {
-    c_p = points.insert(vertexes[ip].x, vertexes[ip].y);
+    c_p = points.insert(vertexes[ip]);
     sections[p_name][ip-1][1] = c_p;
     sections[p_name][ip] = [c_p, null, 0];
     ip++;
@@ -124,6 +124,49 @@ function dot_cuts(p_name, sect, pid) {
     0
   ];
   sections[p_name][sect][1] = pid
+}
+
+function kill_X(l_pol, r_pol) {
+// Converts all intersections between two polygons into nodes
+  var 
+    i1 = 0,
+    i2,
+    np,
+    do_X = {
+      miss: function() {},
+      b1: function() {
+        dot_cuts(r_pol, i2, sections[l_pol][i1][0])
+      },
+      e1: function() {
+        dot_cuts(r_pol, i2, sections[l_pol][i1][1])
+      },
+      b2: function() {
+        dot_cuts(l_pol, i1, sections[r_pol][i2][0])
+      },
+      e2: function() {
+        dot_cuts(l_pol, i1, sections[r_pol][i2][1])
+      },
+      stuck: function() {},
+      X: function() {
+        np = points.insert(find_X);
+        dot_cuts(l_pol, i1, np);
+        dot_cuts(r_pol, i2, np)
+      }
+    }
+  while (i1 < 8) { //sections[l_pol].length) {
+    for (i2 in sections[r_pol]) {
+      do_X[
+        _X(
+          points[sections[l_pol][i1][0]],
+          points[sections[l_pol][i1][1]],
+          points[sections[r_pol][i2][0]],
+          points[sections[r_pol][i2][1]]
+        )
+      ]()
+    }
+    alert(sections[l_pol].length));
+    i1++
+  }
 }
 
 function intersects(fig1, fig2) {
