@@ -132,6 +132,7 @@ function kill_X(l_pol, r_pol) {
     i1 = 0,
     i2,
     np,
+//    tmp,
     do_X = {
       miss: function() {},
       b1: function() {
@@ -148,12 +149,12 @@ function kill_X(l_pol, r_pol) {
       },
       stuck: function() {},
       X: function() {
-        np = points.insert(find_X);
+        np = points.insert(find_X());
         dot_cuts(l_pol, i1, np);
         dot_cuts(r_pol, i2, np)
       }
     }
-  while (i1 < 8) { //sections[l_pol].length) {
+  while (i1 < sections[l_pol].length) {
     for (i2 in sections[r_pol]) {
       do_X[
         _X(
@@ -163,8 +164,9 @@ function kill_X(l_pol, r_pol) {
           points[sections[r_pol][i2][1]]
         )
       ]()
+//      alert('i1 = ' + i1 + ' i2 = ' + i2 + ' decide ' + tmp);
     }
-    alert(sections[l_pol].length));
+//    alert(sections[l_pol].length);
     i1++
   }
 }
