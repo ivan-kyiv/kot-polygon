@@ -171,6 +171,25 @@ function kill_X(l_pol, r_pol) {
   }
 }
 
+function odd_sheaf(p_name, bp, ep) {
+// Counts intersections of the p_name polygon and a line segment
+// Result:
+//   0 - even number of intersections
+//   1 - odd number of intersections
+//   2 - a touching interferes me
+  var ip, my_X, my_res = 0;
+  for (ip in sections[p_name]) {
+    my_X = _X(bp, ep, points[sections[p_name][ip][0]], points[sections[p_name][ip][1]]);
+    if (my_X != 'miss') {
+      if (my_X == 'X') {
+        my_res ^= 1
+      } else {
+        return 2
+      }
+    }
+  }
+}
+
 function intersects(fig1, fig2) {
   // Step 1. Import my polygons into database (points, sections)
   // Step 2. Exclude all intersections of line segments.
