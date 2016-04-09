@@ -38,7 +38,73 @@ function p_import(p_name, vertexes) {
   sections[p_name][ip-1][1] = b_p;
   }
 
+function _X(b1, e1, b2, e2) {
+// returns intersection mode of two line segments
+// arguments are four point in format {x:X, y:Y}:
+//   1, 2 - numbers of segments
+//   b - segment begins
+//   e - segment ends
+// result:
+//   'miss' - there is no mutual points except maybe ends
+//   'b1', 'e1', 'b2' or 'e2' - specifies the name of mutual point
+//       (if mutual is one of these four)
+//   'stuck' - collinear
+//   'X' - beautiful intersection :) not like above
+  var
+    rel = { // relative masures of these four points
+    // Format: rel[base point][related point or vector product]
+      b1: {
+        e1: {x:(e1.x - b1.x), y:(e1.y - b1.y)},
+        b2: {x:(b2.x - b1.x), y:(b2.y - b1.y)},
+        e2: {x:(e2.x - b1.x), y:(e2.y - b1.y)}
+      }
+    }
+  rel.b1.zb = rel.b1.b2.x * rel.b1.e1.y - rel.b1.b2.y * rel.b1.e1.x;
+  rel.b1.ze = rel.b1.e2.x * rel.b1.e1.y - rel.b1.e2.y * rel.b1.e1.x;
+  rel.b1.zz = rel.b1.zb * rel.b1.ze;
+  if (rel.b1.zz > 0) {
+    return 'miss'      // The line segment 2 has no mutual point with the line 1
+  }
+  if ((rel.b1.zb == 0) && (rel.b1.ze == 0)) {
+    return 'stuck'     // The line segment 2 is totaly inside the line 1
+  }
+  rel.b2 = {
+    b1: {x:(b1.x - b2.x), y:(b1.y - b2.y)},
+    e1: {x:(e1.x - b2.x), y:(e1.y - b2.y)},
+    e2: {x:(e2.x - b2.x), y:(e2.y - b2.y)}
+  }
+  rel.b2.zb = rel.b2.b1.x * rel.b2.e2.y - rel.b2.b1.y * rel.b2.e2.x;
+  rel.b2.ze = rel.b2.e1.x * rel.b2.e2.y - rel.b2.e1.y * rel.b2.e2.x;
+  rel.b2.zz = rel.b2.zb * rel.b2.ze;
+  if (rel.b2.zz > 0) {
+    return 'miss'      // The line segment 1 has no mutual point with the line 2
+  }
+  // Now I know that the line segment 1 and the line segment 2 have only one mutual point
+  if (rel.b1.zz < 0) { // IF the line 1 cuts the line segment 2
+    if (rel.b2.zz < 0) {
+      return 'X'
+    }
+    // Now I know that the line segment 1 abuts the line segment 2
+    if (rel.b2.zb == 0) {
+      return 'b1'
+    }
+    return 'e1'
+  }
+  // Now I khow that the line segment 2 abuts the line 1
+  if (rel.b2.zz == 0) {
+    return 'miss' //
+  }
+  return rel.b1.zz
+}
+
 function intersects(fig1, fig2) {
+  // Step 1. Import my polygons into database (points, sections)
+  // Step 2. Exclude all intersections of line segments.
+  //         Add every mutual point to 'points' and divide corespondent line segments
+  // Step 3. Check every sections. Is it inside of not self polygon?
+  // Step 4. Make some resulting polygons. I must use every section wich is inside
+  //         of not self polygon. I can use mutual sections if needed.
+  
   // Замените код функции на полноценную реализацию
 
   return [
