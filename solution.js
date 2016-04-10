@@ -217,6 +217,52 @@ function cull(l_pol, r_pol) {
   }
 }
 
+function find_sec(polygons, from_p) {
+// Finds a suitable section wich starts at specified point
+// Format:
+//   polygons = {1st poligon name, 2nd poligon name, ...}
+//   from_p - point id or 'any'
+// result = {p: polygon name, s: section, e: ending side}
+//   ending side - 0 or 1.
+  var i, p_name, p_i, mark, my_res = 'stop';
+  for (p_i in polygons) {
+    p_name = polygons[p_i];
+    for (i in sections[p_name]) {
+      mark = sections[p_name][i][2];
+      if (mark > 2) {
+        if (from_p == 'any') {
+          if (mark == 3) {
+            return {        // This is for the first section in a polygon
+              p: p_name,
+              s: i,
+              e: 1
+            }
+          }
+        } else if (sections[p_name][i][0] == from_p) {
+          my_res = {            // The begining of the section is coupled to the previous
+            p: p_name,
+            s: i,
+            e: 1
+          }
+          if (mark == 3) {
+            return my_res
+          }
+        } else if (sections[p_name][i][1] == from_p) {
+          my_res = {            // The ending of the section is coupled to the previous
+            p: p_name,
+            s: i,
+            e: 0
+          }
+          if (mark == 3) {
+            return my_res
+          }
+        }
+      }
+    }
+  }
+  return my_res
+}
+
 function intersects(fig1, fig2) {
   // Step 1. Import my polygons into database (points, sections)
   p_import('pol1',fig1);
@@ -234,31 +280,49 @@ function intersects(fig1, fig2) {
 
   // Step 4. Make some resulting polygons. I must use every section wich is inside
   //         of not self polygon. I can use mutual sections if needed.
+  var result = [], start_p, cp = -1, my_sec;
+  while ((my_sec = find_sec(['pol1', 'pol2'], 'any')) != 'stop') {
+    sections[my_sec.p][my_sec.s][2] = 1;
+    start_p = sections[my_sec.p][my_sec.s][my_sec.e ^ 1];
+    cp++;
+    result[cp] = [
+      points[start_p],
+      points[sections[my_sec.p][my_sec.s][my_sec.e]]
+    ];
+    my_sec = find_sec(['pol1', 'pol2'], sections[my_sec.p][my_sec.s][my_sec.e]);
+    while (sections[my_sec.p][my_sec.s][my_sec.e] != start_p) {
+      sections[my_sec.p][my_sec.s][2] = 1;
+      result[cp].push(points[sections[my_sec.p][my_sec.s][my_sec.e]]);
+      my_sec = find_sec(['pol1', 'pol2'], sections[my_sec.p][my_sec.s][my_sec.e])
+    }
+    sections[my_sec.p][my_sec.s][2] = 1;
+  }
+  return result;
   
   // Замените код функции на полноценную реализацию
-
-  return [
-    [
-      { x: 60,  y: 240 },
-      { x: 90,  y: 240 },
-      { x: 120, y: 180 },
-      { x: 90,  y: 90  },
-      { x: 60,  y: 150 },
-    ],
-    [
-      { x: 270, y: 240 },
-      { x: 300, y: 240 },
-      { x: 300, y: 150 },
-      { x: 270, y: 90  },
-      { x: 240, y: 180 },
-    ],
-    [
-      { x: 150, y: 180 },
-      { x: 180, y: 240 },
-      { x: 210, y: 180 },
-      { x: 210, y: 90  },
-      { x: 180, y: 60  },
-      { x: 150, y: 90  }
-    ]
-  ];
+//
+//  return [
+//    [
+//      { x: 60,  y: 240 },
+//      { x: 90,  y: 240 },
+//      { x: 120, y: 180 },
+//      { x: 90,  y: 90  },
+//      { x: 60,  y: 150 },
+//    ],
+//    [
+//      { x: 270, y: 240 },
+//      { x: 300, y: 240 },
+//      { x: 300, y: 150 },
+//      { x: 270, y: 90  },
+//      { x: 240, y: 180 },
+//    ],
+//    [
+//      { x: 150, y: 180 },
+//      { x: 180, y: 240 },
+//      { x: 210, y: 180 },
+//      { x: 210, y: 90  },
+//      { x: 180, y: 60  },
+//      { x: 150, y: 90  }
+//    ]
+//  ];
 }
