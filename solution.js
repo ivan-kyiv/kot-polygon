@@ -188,13 +188,50 @@ function odd_sheaf(p_name, bp, ep) {
       }
     }
   }
+  return my_res
+}
+
+function cull(l_pol, r_pol) {
+// Marks every l_pol sections 2, 3 or 4 dependig position to r_pol
+  var i, my_p, my_odd;
+  for (i in sections[l_pol]) {
+    my_p = {
+      x: (points[sections[l_pol][i][0]].x + points[sections[l_pol][i][1]].x)/2,
+      y: (points[sections[l_pol][i][0]].y + points[sections[l_pol][i][1]].y)/2
+    }
+    my_odd = odd_sheaf(r_pol, my_p, {x: 0, y: 0});
+    if (my_odd == 0) {
+      sections[l_pol][i][2] = 2
+    } else if (my_odd == 1) {
+      sections[l_pol][i][2] = 3
+    } else {
+      my_odd = odd_sheaf(r_pol, my_p, {x: -77, y: 0});
+      if (my_odd == 0) {
+        sections[l_pol][i][2] = 2
+      } else if (my_odd == 1) {
+        sections[l_pol][i][2] = 3
+      } else {
+        sections[l_pol][i][2] = 4
+      }
+    }
+  }
 }
 
 function intersects(fig1, fig2) {
   // Step 1. Import my polygons into database (points, sections)
+  p_import('pol1',fig1);
+  p_import('pol2',fig2);
+
   // Step 2. Exclude all intersections of line segments.
   //         Add every mutual point to 'points' and divide corespondent line segments
+  kill_X('pol1', 'pol1');
+  kill_X('pol2', 'pol2');
+  kill_X('pol1', 'pol2');
+
   // Step 3. Check every sections. Is it inside of not self polygon?
+  cull('pol1', 'pol2');
+  cull('pol2', 'pol1');
+
   // Step 4. Make some resulting polygons. I must use every section wich is inside
   //         of not self polygon. I can use mutual sections if needed.
   
